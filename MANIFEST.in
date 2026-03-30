@@ -1,0 +1,4 @@
+recursive-include src/telescope/static *
+recursive-include src/telescope/templates *
+include LICENSE
+include README.md

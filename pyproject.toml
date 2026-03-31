@@ -4,41 +4,48 @@ build-backend = "hatchling.build"
 
 [project]
 name = "django-scope"
-version = "0.1.0"
-description = "An elegant debug assistant for Django, inspired by Laravel Telescope"
+version = "1.0.0"
+description = "A real-time debugging and monitoring dashboard for Django — monitor requests, queries, cache, Redis, exceptions, and more."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "cosmic" }]
-keywords = ["django", "debug", "telescope", "monitoring", "profiling"]
+authors = [{ name = "MythicalCosmic", email = "qodirjonov0854@gmail.com" }]
+keywords = ["django", "debugging", "monitoring", "observability", "websocket", "scope", "dashboard", "profiling"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Framework :: Django",
-    "Framework :: Django :: 4.2",
-    "Framework :: Django :: 5.0",
-    "Framework :: Django :: 5.1",
+    "Framework :: Django :: 4",
+    "Framework :: Django :: 5",
     "Framework :: Django :: 6",
+    "Framework :: AsyncIO",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: System :: Monitoring",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Software Development :: Debuggers",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "django>=4.2",
     "channels>=4.0",
     "daphne>=4.2.1",
-    "setuptools>=82.0.1",
-    "wheel>=0.46.3",
-    "twine>=6.2.0",
-    "build>=1.4.2",
-    "django-redis>=6.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/MythicalCosmic/django-scope"
+Documentation = "https://github.com/MythicalCosmic/django-scope/wiki"
+Repository = "https://github.com/MythicalCosmic/django-scope"
+"Bug Tracker" = "https://github.com/MythicalCosmic/django-scope/issues"
+
 [project.optional-dependencies]
+redis = ["redis>=4.0", "django-redis>=5.0"]
 dev = [
     "pytest",
     "pytest-django",

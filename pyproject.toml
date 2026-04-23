@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "django-scope"
-version = "1.0.1"
+version = "2.0.0"
 description = "A real-time debugging and monitoring dashboard for Django — monitor requests, queries, cache, Redis, exceptions, and more."
 readme = "README.md"
 license = "MIT"

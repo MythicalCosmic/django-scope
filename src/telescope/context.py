@@ -22,7 +22,7 @@ def end_scope():
     """End the current telescope scope."""
     batch_id_var.set(None)
     buffer_var.set(None)
-    recording_var.set(True)
+    # Don't reset recording_var — preserve the global recording state
 
 
 def get_batch_id():

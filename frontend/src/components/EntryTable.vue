@@ -15,24 +15,25 @@ defineProps<{
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-surface-800 light:border-surface-200">
-          <th class="text-left py-3 px-4 text-xs uppercase tracking-wider text-surface-500 font-medium">Type</th>
-          <th class="text-left py-3 px-4 text-xs uppercase tracking-wider text-surface-500 font-medium">Summary</th>
-          <th class="text-left py-3 px-4 text-xs uppercase tracking-wider text-surface-500 font-medium">Tags</th>
-          <th class="text-right py-3 px-4 text-xs uppercase tracking-wider text-surface-500 font-medium">Time</th>
+        <tr class="border-b border-surface-800/60 light:border-surface-200">
+          <th class="text-left py-3 px-4 text-[10px] uppercase tracking-widest text-surface-500 font-semibold">Type</th>
+          <th class="text-left py-3 px-4 text-[10px] uppercase tracking-widest text-surface-500 font-semibold">Summary</th>
+          <th class="text-left py-3 px-4 text-[10px] uppercase tracking-widest text-surface-500 font-semibold">Tags</th>
+          <th class="text-right py-3 px-4 text-[10px] uppercase tracking-widest text-surface-500 font-semibold">Time</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="loading && entries.length === 0" v-for="i in 8" :key="i">
-          <td class="py-3 px-4"><div class="skeleton h-4 w-16"></div></td>
-          <td class="py-3 px-4"><div class="skeleton h-4 w-64"></div></td>
+          <td class="py-3 px-4"><div class="skeleton h-5 w-16"></div></td>
+          <td class="py-3 px-4"><div class="skeleton h-4 w-72"></div></td>
           <td class="py-3 px-4"><div class="skeleton h-4 w-20"></div></td>
-          <td class="py-3 px-4 text-right"><div class="skeleton h-4 w-12 ml-auto"></div></td>
+          <td class="py-3 px-4 text-right"><div class="skeleton h-4 w-14 ml-auto"></div></td>
         </tr>
         <tr
-          v-for="entry in entries"
+          v-for="(entry, idx) in entries"
           :key="entry.uuid"
-          class="border-b border-surface-800/50 light:border-surface-100 hover:bg-surface-800/50 light:hover:bg-surface-50 transition-colors cursor-pointer animate-fade-in"
+          class="border-b border-surface-800/30 light:border-surface-100 row-hover animate-slide-up"
+          :class="`stagger-${Math.min(idx + 1, 10)}`"
           @click="$router.push({ name: detailRoute || `${entry.type_slug}-detail`, params: { uuid: entry.uuid } })"
         >
           <td class="py-3 px-4">
@@ -46,7 +47,7 @@ defineProps<{
               <span
                 v-for="tag in entry.tags?.slice(0, 3)"
                 :key="tag"
-                class="inline-block px-1.5 py-0.5 text-xs rounded bg-surface-800 light:bg-surface-100 text-surface-400 light:text-surface-500"
+                class="inline-block px-1.5 py-0.5 text-[11px] rounded-md bg-surface-800/80 light:bg-surface-100 text-surface-400 light:text-surface-500 font-medium"
               >
                 {{ tag }}
               </span>
@@ -59,9 +60,9 @@ defineProps<{
       </tbody>
     </table>
 
-    <div v-if="!loading && entries.length === 0" class="text-center py-16 text-surface-500">
-      <div class="text-4xl mb-3 opacity-30">🔭</div>
-      <p>No entries found</p>
+    <div v-if="!loading && entries.length === 0" class="text-center py-20 text-surface-500">
+      <div class="text-5xl mb-4 opacity-20">🔭</div>
+      <p class="text-sm">No entries found</p>
     </div>
   </div>
 </template>

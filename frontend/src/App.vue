@@ -13,16 +13,18 @@ import MainLayout from './layouts/MainLayout.vue'
 </template>
 
 <style>
-.page-enter-active,
+.page-enter-active {
+  transition: opacity 0.2s cubic-bezier(0.21, 1.02, 0.73, 1), transform 0.2s cubic-bezier(0.21, 1.02, 0.73, 1);
+}
 .page-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.12s ease, transform 0.12s ease;
 }
 .page-enter-from {
   opacity: 0;
-  transform: translateX(8px);
+  transform: translateY(8px);
 }
 .page-leave-to {
   opacity: 0;
-  transform: translateX(-8px);
+  transform: translateY(-4px);
 }
 </style>

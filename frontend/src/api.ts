@@ -1,4 +1,4 @@
-import type { EntryListResponse, EntryDetailResponse, StatusResponse, BatchResponse } from './types'
+import type { EntryListResponse, EntryDetailResponse, StatusResponse, BatchResponse, StatsResponse, HealthResponse } from './types'
 
 const config = window.__TELESCOPE_CONFIG__ || { basePath: '/telescope/' }
 const BASE = `/${config.basePath.replace(/^\/|\/$/g, '')}/api`
@@ -35,6 +35,15 @@ export const api = {
 
   status() {
     return request<StatusResponse>('/status')
+  },
+
+  stats(range?: string) {
+    const qs = range ? `?range=${range}` : ''
+    return request<StatsResponse>(`/stats${qs}`)
+  },
+
+  health() {
+    return request<HealthResponse>('/health')
   },
 
   clear(typeSlug?: string) {

@@ -7,6 +7,8 @@ export const router = createRouter({
   history: createWebHistory(base),
   routes: [
     { path: '/', name: 'dashboard', component: () => import('./pages/DashboardPage.vue') },
+    { path: '/stats', name: 'stats', component: () => import('./pages/StatsPage.vue') },
+    { path: '/health', name: 'health', component: () => import('./pages/HealthPage.vue') },
     { path: '/requests', name: 'requests', component: () => import('./pages/RequestsPage.vue') },
     { path: '/requests/:uuid', name: 'request-detail', component: () => import('./pages/RequestDetailPage.vue') },
     { path: '/queries', name: 'queries', component: () => import('./pages/QueriesPage.vue') },
@@ -41,5 +43,9 @@ export const router = createRouter({
     { path: '/schedule/:uuid', name: 'schedule-detail', component: () => import('./pages/EntryDetailPage.vue') },
     { path: '/batches', name: 'batches', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'batch', title: 'Batches' } },
     { path: '/batches/:uuid', name: 'batch-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/transactions', name: 'transactions', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'transaction', title: 'Transactions' } },
+    { path: '/transactions/:uuid', name: 'transaction-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/storage', name: 'storage', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'storage', title: 'Storage' } },
+    { path: '/storage/:uuid', name: 'storage-detail', component: () => import('./pages/EntryDetailPage.vue') },
   ],
 })

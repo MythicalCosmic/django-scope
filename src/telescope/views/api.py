@@ -38,9 +38,13 @@ class EntryListView(TelescopeApiMixin, View):
         qs = apply_filters(qs, request.GET)
 
         entries = [serialize_entry_list(e) for e in qs]
+        try:
+            limit = min(max(int(request.GET.get("limit", 50)), 1), 100)
+        except (ValueError, TypeError):
+            limit = 50
         return JsonResponse({
             "entries": entries,
-            "has_more": len(entries) == int(request.GET.get("limit", 50)),
+            "has_more": len(entries) == limit,
         })
 
 
@@ -57,10 +61,14 @@ class TypedEntryListView(TelescopeApiMixin, View):
         qs = apply_filters(qs, request.GET)
 
         entries = [serialize_entry_list(e) for e in qs]
+        try:
+            limit = min(max(int(request.GET.get("limit", 50)), 1), 100)
+        except (ValueError, TypeError):
+            limit = 50
         return JsonResponse({
             "entries": entries,
             "type": {"value": entry_type.value, "label": entry_type.label, "slug": entry_type.slug},
-            "has_more": len(entries) == int(request.GET.get("limit", 50)),
+            "has_more": len(entries) == limit,
         })
 
 
@@ -144,6 +152,8 @@ class ToggleRecordingView(TelescopeApiMixin, View):
     """Toggle recording on/off."""
 
     def post(self, request):
+        from ..settings import set_runtime
+
         try:
             body = json.loads(request.body) if request.body else {}
         except json.JSONDecodeError:
@@ -151,18 +161,12 @@ class ToggleRecordingView(TelescopeApiMixin, View):
 
         recording = body.get("recording")
         if recording is None:
-            # Toggle
-            from django.conf import settings
-            telescope_settings = getattr(settings, "TELESCOPE", {})
-            telescope_settings["RECORDING"] = not get_config("RECORDING")
-            settings.TELESCOPE = telescope_settings
+            new_value = not get_config("RECORDING")
         else:
-            from django.conf import settings
-            telescope_settings = getattr(settings, "TELESCOPE", {})
-            telescope_settings["RECORDING"] = bool(recording)
-            settings.TELESCOPE = telescope_settings
+            new_value = bool(recording)
 
-        return JsonResponse({"recording": get_config("RECORDING")})
+        set_runtime("RECORDING", new_value)
+        return JsonResponse({"recording": new_value})
 
 
 class MonitoringView(TelescopeApiMixin, View):

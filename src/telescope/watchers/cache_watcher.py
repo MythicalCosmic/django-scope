@@ -43,6 +43,17 @@ class CacheWatcher(BaseWatcher):
             wrapped = _make_wrapper(method_name, original)
             setattr(cache_cls, method_name, wrapped)
 
+    @staticmethod
+    def record_operation(operation, key=None, value=None, hit=None,
+                         duration_ms=0, backend_alias="default"):
+        """Public API for TelescopeCacheBackend to record cache operations."""
+        args = ()
+        if key is not None and value is not None:
+            args = (key, value)
+        elif key is not None:
+            args = (key,)
+        _record(operation, args, {}, value, duration_ms, backend_alias)
+
 
 def _make_wrapper(method_name, original):
     def wrapper(self, *args, **kwargs):

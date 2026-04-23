@@ -2,10 +2,14 @@ from django.db.models.signals import post_delete, post_save, pre_save
 
 from ..entry_type import EntryType
 from ..recorder import Recorder
+from ..settings import get_config
 from .base import BaseWatcher
 
 # Store original field values for change tracking
 _ORIGINAL_VALUES_ATTR = "_telescope_original_values"
+
+# Fields that should never have their values logged
+_SENSITIVE_PATTERNS = ("password", "secret", "token", "key", "hash", "cvv", "ssn")
 
 
 class ModelWatcher(BaseWatcher):
@@ -15,16 +19,22 @@ class ModelWatcher(BaseWatcher):
         post_delete.connect(self._on_post_delete)
 
     def _should_ignore(self, sender):
-        # Ignore telescope's own models
         if sender._meta.app_label == "telescope":
             return True
-        # Ignore Django internal models
         if sender._meta.app_label in ("contenttypes", "sessions", "admin"):
             return True
         return False
 
+    @staticmethod
+    def _is_sensitive_field(field_name):
+        name_lower = field_name.lower()
+        return any(p in name_lower for p in _SENSITIVE_PATTERNS)
+
     def _on_pre_save(self, sender, instance, **kwargs):
         if self._should_ignore(sender):
+            return
+
+        if not get_config("MODEL_CHANGE_TRACKING"):
             return
 
         # Store original values for change detection
@@ -50,7 +60,10 @@ class ModelWatcher(BaseWatcher):
                 old_val = original.get(field_name)
                 new_val = getattr(instance, field_name, None)
                 if str(old_val) != str(new_val):
-                    changes[field_name] = {"old": str(old_val), "new": str(new_val)}
+                    if self._is_sensitive_field(field_name):
+                        changes[field_name] = {"old": "********", "new": "********"}
+                    else:
+                        changes[field_name] = {"old": str(old_val), "new": str(new_val)}
             delattr(instance, _ORIGINAL_VALUES_ATTR)
 
         tags = [f"model:{sender.__name__}", f"action:{action}"]

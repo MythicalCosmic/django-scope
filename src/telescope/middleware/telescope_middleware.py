@@ -15,12 +15,20 @@ class TelescopeMiddleware(MiddlewareMixin):
         if not get_config("ENABLED"):
             return None
 
+        if not get_config("RECORDING"):
+            return None
+
         if self._should_ignore(request):
             return None
 
         start_scope()
         request._telescope_start_time = time.perf_counter()
         request._telescope_active = True
+
+        # Reset per-request query pattern tracking for N+1 detection
+        from ..watchers.query_watcher import reset_query_tracking
+        reset_query_tracking()
+
         return None
 
     def process_response(self, request, response):

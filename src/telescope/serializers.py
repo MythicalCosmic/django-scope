@@ -8,6 +8,14 @@ def serialize_entry_list(entry):
 
     summary = _get_summary(entry_type, content)
 
+    # Use prefetched tags if available to avoid extra queries
+    if hasattr(entry, "_prefetched_objects_cache") and "tags" in entry._prefetched_objects_cache:
+        tags = [t.tag for t in entry._prefetched_objects_cache["tags"]]
+    elif entry.pk:
+        tags = list(entry.tags.values_list("tag", flat=True))
+    else:
+        tags = []
+
     return {
         "uuid": str(entry.uuid),
         "batch_id": str(entry.batch_id) if entry.batch_id else None,
@@ -17,7 +25,7 @@ def serialize_entry_list(entry):
         "summary": summary,
         "content": content,
         "created_at": entry.created_at.isoformat(),
-        "tags": list(entry.tags.values_list("tag", flat=True)) if entry.pk else [],
+        "tags": tags,
     }
 
 
@@ -25,7 +33,6 @@ def serialize_entry_detail(entry):
     """Serialize an entry for detail views (full content)."""
     base = serialize_entry_list(entry)
     base["content"] = entry.content
-    base["tags"] = [t.tag for t in entry.tags.all()]
     return base
 
 

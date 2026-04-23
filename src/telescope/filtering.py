@@ -31,9 +31,10 @@ def apply_filters(queryset, params):
     if family_hash:
         queryset = queryset.filter(family_hash=family_hash)
 
-    # Search in content (JSON contains)
+    # Search in content (JSON contains) — cap length to prevent abuse
     search = params.get("search")
     if search:
+        search = search[:200]
         queryset = queryset.filter(
             Q(content__icontains=search) | Q(tags__tag__icontains=search)
         ).distinct()

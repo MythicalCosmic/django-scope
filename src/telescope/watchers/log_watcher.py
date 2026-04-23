@@ -2,6 +2,7 @@ import logging
 
 from ..entry_type import EntryType
 from ..recorder import Recorder
+from ..settings import get_config
 from .base import BaseWatcher
 
 
@@ -11,6 +12,9 @@ class TelescopeLogHandler(logging.Handler):
     def emit(self, record):
         # Skip telescope's own log messages to avoid recursion
         if record.name.startswith("telescope"):
+            return
+        # Skip Django's internal debug noise
+        if record.name.startswith("django.") and record.levelno < logging.WARNING:
             return
 
         try:
@@ -45,7 +49,10 @@ class LogWatcher(BaseWatcher):
 
     def register(self):
         self._handler = TelescopeLogHandler()
-        self._handler.setLevel(logging.DEBUG)
+        # Use configurable level — default WARNING to avoid flooding DB
+        level_name = get_config("LOG_LEVEL")
+        level = getattr(logging, level_name, logging.WARNING)
+        self._handler.setLevel(level)
         root_logger = logging.getLogger()
         root_logger.addHandler(self._handler)
 

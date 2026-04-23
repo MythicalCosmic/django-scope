@@ -8,7 +8,7 @@ from .entry_type import EntryType
 class TelescopeEntry(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     batch_id = models.UUIDField(null=True, blank=True, db_index=True)
-    family_hash = models.CharField(max_length=64, null=True, blank=True)
+    family_hash = models.CharField(max_length=64, null=True, blank=True, db_index=True)
     type = models.SmallIntegerField(choices=[(t.value, t.label) for t in EntryType], db_index=True)
     content = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -34,6 +34,9 @@ class TelescopeEntryTag(models.Model):
 
     class Meta:
         db_table = "telescope_entries_tags"
+        indexes = [
+            models.Index(fields=["entry", "tag"]),
+        ]
 
     def __str__(self):
         return self.tag

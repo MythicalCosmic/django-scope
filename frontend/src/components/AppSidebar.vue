@@ -5,31 +5,31 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 
 const analyticsItems = [
-  { path: '/', label: 'Dashboard', icon: '◉' },
-  { path: '/stats', label: 'Stats', icon: '📊' },
-  { path: '/health', label: 'Health', icon: '💚' },
+  { path: '/', label: 'Dashboard', icon: '\u25C9' },
+  { path: '/stats', label: 'Stats', icon: '\u2261' },
+  { path: '/health', label: 'Health', icon: '\u2665' },
 ]
 
 const watcherItems = [
-  { path: '/requests', label: 'Requests', icon: '⇄' },
-  { path: '/queries', label: 'Queries', icon: '⛁' },
-  { path: '/exceptions', label: 'Exceptions', icon: '⚠' },
-  { path: '/models', label: 'Models', icon: '◧' },
-  { path: '/logs', label: 'Logs', icon: '☰' },
-  { path: '/cache', label: 'Cache', icon: '⧉' },
-  { path: '/redis', label: 'Redis', icon: '◆' },
-  { path: '/mail', label: 'Mail', icon: '✉' },
-  { path: '/views', label: 'Views', icon: '◱' },
-  { path: '/events', label: 'Events', icon: '⚡' },
-  { path: '/commands', label: 'Commands', icon: '⌘' },
-  { path: '/dumps', label: 'Dumps', icon: '⊞' },
-  { path: '/http-client', label: 'HTTP Client', icon: '↗' },
-  { path: '/gates', label: 'Gates', icon: '🔒' },
-  { path: '/notifications', label: 'Notifications', icon: '🔔' },
-  { path: '/schedule', label: 'Schedule', icon: '⏱' },
-  { path: '/batches', label: 'Batches', icon: '▦' },
-  { path: '/transactions', label: 'Transactions', icon: '⇌' },
-  { path: '/storage', label: 'Storage', icon: '📁' },
+  { path: '/requests', label: 'Requests', icon: '\u21C4' },
+  { path: '/queries', label: 'Queries', icon: '\u26C1' },
+  { path: '/exceptions', label: 'Exceptions', icon: '\u26A0' },
+  { path: '/models', label: 'Models', icon: '\u25E7' },
+  { path: '/logs', label: 'Logs', icon: '\u2630' },
+  { path: '/cache', label: 'Cache', icon: '\u29C9' },
+  { path: '/redis', label: 'Redis', icon: '\u25C6' },
+  { path: '/mail', label: 'Mail', icon: '\u2709' },
+  { path: '/views', label: 'Views', icon: '\u25F1' },
+  { path: '/events', label: 'Events', icon: '\u2B21' },
+  { path: '/commands', label: 'Commands', icon: '\u2318' },
+  { path: '/dumps', label: 'Dumps', icon: '\u229E' },
+  { path: '/http-client', label: 'HTTP Client', icon: '\u2197' },
+  { path: '/gates', label: 'Gates', icon: '\u2616' },
+  { path: '/notifications', label: 'Notifications', icon: '\u266A' },
+  { path: '/schedule', label: 'Schedule', icon: '\u23F1' },
+  { path: '/batches', label: 'Batches', icon: '\u25A6' },
+  { path: '/transactions', label: 'Transactions', icon: '\u21CC' },
+  { path: '/storage', label: 'Storage', icon: '\u2750' },
 ]
 
 function isActive(path: string) {
@@ -43,7 +43,7 @@ function isActive(path: string) {
     <!-- Brand -->
     <div class="p-4 pb-3">
       <router-link to="/" class="flex items-center gap-2.5 group">
-        <span class="text-2xl transition-transform duration-300 group-hover:scale-110">🔭</span>
+        <span class="text-xl text-primary-400 transition-transform duration-300 group-hover:scale-110">&#x25CE;</span>
         <span class="text-lg font-bold bg-gradient-to-r from-primary-400 to-primary-300 bg-clip-text text-transparent">
           Telescope
         </span>

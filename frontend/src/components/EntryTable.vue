@@ -61,7 +61,7 @@ defineProps<{
     </table>
 
     <div v-if="!loading && entries.length === 0" class="text-center py-20 text-surface-500">
-      <div class="text-5xl mb-4 opacity-20">🔭</div>
+      <div class="text-5xl mb-4 opacity-20">&#x25CE;</div>
       <p class="text-sm">No entries found</p>
     </div>
   </div>

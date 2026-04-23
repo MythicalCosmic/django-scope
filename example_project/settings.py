@@ -57,11 +57,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
 
@@ -76,7 +72,7 @@ TELESCOPE = {
         "LogWatcher": {"enabled": True},
         "DumpWatcher": {"enabled": True},
         "CacheWatcher": {"enabled": True},
-        "RedisWatcher": {"enabled": True},
+        "RedisWatcher": {"enabled": False},
         "ViewWatcher": {"enabled": False},
         "EventWatcher": {"enabled": False},
         "MailWatcher": {"enabled": False},

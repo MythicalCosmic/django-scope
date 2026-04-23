@@ -45,8 +45,8 @@ async function toggleRecording() {
         class="p-2 rounded-lg text-surface-400 hover:text-surface-200 hover:bg-surface-800/60 light:hover:text-surface-700 light:hover:bg-surface-100 transition-all duration-200"
         :title="theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'"
       >
-        <span class="text-lg inline-block transition-transform duration-300" :class="theme.isDark ? 'rotate-0' : 'rotate-180'">
-          {{ theme.isDark ? '☀️' : '🌙' }}
+        <span class="text-base inline-block transition-transform duration-300" :class="theme.isDark ? 'rotate-0' : 'rotate-180'">
+          {{ theme.isDark ? '\u263C' : '\u263E' }}
         </span>
       </button>
     </div>

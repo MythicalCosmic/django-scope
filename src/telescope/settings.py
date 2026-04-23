@@ -56,7 +56,10 @@ DEFAULTS = {
         "NotificationWatcher": {"enabled": True},
         "ScheduleWatcher": {"enabled": False},
         "BatchWatcher": {"enabled": False},
+        "TransactionWatcher": {"enabled": False},
+        "StorageWatcher": {"enabled": False},
     },
+    "APDEX_THRESHOLD": 500,  # ms — "satisfied" threshold for Apdex score
 }
 
 # Thread-safe runtime state for values toggled at runtime (e.g. RECORDING).

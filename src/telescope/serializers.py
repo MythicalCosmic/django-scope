@@ -131,5 +131,18 @@ def _get_summary(entry_type, content):
             task = content.get("task", "")
             return f"Batch {batch_id[:8]}... — {task}"
 
+        case EntryType.TRANSACTION:
+            action = content.get("action", "")
+            conn = content.get("connection", "")
+            txn_dur = content.get("transaction_duration")
+            dur_str = f" ({txn_dur}ms)" if txn_dur is not None else ""
+            return f"{action} on {conn}{dur_str}"
+
+        case EntryType.STORAGE:
+            action = content.get("action", "")
+            path = content.get("path", "")
+            duration = content.get("duration", "")
+            return f"{action} {path} ({duration}ms)"
+
         case _:
             return str(content)[:100]

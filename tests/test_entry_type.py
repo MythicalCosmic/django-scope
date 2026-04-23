@@ -3,7 +3,7 @@ from telescope.entry_type import EntryType
 
 class TestEntryType:
     def test_all_types_defined(self):
-        assert len(EntryType) == 17
+        assert len(EntryType) == 19
 
     def test_label(self):
         assert EntryType.REQUEST.label == "Request"
@@ -19,4 +19,4 @@ class TestEntryType:
 
     def test_values_are_sequential(self):
         values = [e.value for e in EntryType]
-        assert values == list(range(1, 18))
+        assert values == list(range(1, 20))

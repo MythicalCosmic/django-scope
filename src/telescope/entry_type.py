@@ -19,6 +19,8 @@ class EntryType(IntEnum):
     NOTIFICATION = 15
     SCHEDULE = 16
     BATCH = 17
+    TRANSACTION = 18
+    STORAGE = 19
 
     @property
     def label(self):

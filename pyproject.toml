@@ -46,6 +46,7 @@ Repository = "https://github.com/MythicalCosmic/django-scope"
 
 [project.optional-dependencies]
 redis = ["redis>=4.0", "django-redis>=5.0"]
+mcp = ["mcp>=1.0"]
 dev = [
     "pytest",
     "pytest-django",

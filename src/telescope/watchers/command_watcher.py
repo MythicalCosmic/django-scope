@@ -1,5 +1,6 @@
 import time
 
+from ..context import end_scope, start_scope
 from ..entry_type import EntryType
 from ..recorder import Recorder
 from .base import BaseWatcher
@@ -18,6 +19,17 @@ class CommandWatcher(BaseWatcher):
 
     @staticmethod
     def _patched_execute(command_self, *args, **options):
+        command_name = command_self.__class__.__module__.split(".")[-1]
+
+        # Skip telescope's own commands
+        if command_name.startswith("telescope"):
+            return CommandWatcher._original_execute(command_self, *args, **options)
+
+        # Set up scope and query tracking for N+1 detection
+        start_scope()
+        from ..watchers.query_watcher import reset_query_tracking
+        reset_query_tracking()
+
         start = time.perf_counter()
         exit_code = 0
         output = None
@@ -28,16 +40,11 @@ class CommandWatcher(BaseWatcher):
         except SystemExit as e:
             exit_code = e.code if e.code else 0
             raise
-        except Exception as e:
+        except Exception:
             exit_code = 1
             raise
         finally:
             duration_ms = (time.perf_counter() - start) * 1000
-            command_name = command_self.__class__.__module__.split(".")[-1]
-
-            # Skip telescope's own commands
-            if command_name.startswith("telescope"):
-                return
 
             tags = [f"command:{command_name}"]
             if exit_code != 0:
@@ -52,3 +59,5 @@ class CommandWatcher(BaseWatcher):
             }
 
             Recorder.record(entry_type=EntryType.COMMAND, content=content, tags=tags)
+            Recorder.flush()
+            end_scope()

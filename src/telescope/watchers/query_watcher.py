@@ -57,10 +57,17 @@ class QueryWatcher(BaseWatcher):
         _patched_connections.add(conn_id)
         connection.execute_wrappers.append(self._execute_wrapper)
 
+    # Transaction boundary SQL — skip to avoid double-recording with TransactionWatcher
+    _TRANSACTION_SQL = frozenset({"BEGIN", "COMMIT", "ROLLBACK", "END", "SAVEPOINT", "RELEASE"})
+
     def _execute_wrapper(self, execute, sql, params, many, context):
-        # Skip telescope's own queries to prevent recursion
         sql_str = str(sql)
+        # Skip telescope's own queries to prevent recursion
         if "telescope_" in sql_str:
+            return execute(sql, params, many, context)
+        # Skip transaction boundary SQL (handled by TransactionWatcher)
+        first_word = sql_str.lstrip().split(None, 1)[0].upper() if sql_str.strip() else ""
+        if first_word in self._TRANSACTION_SQL:
             return execute(sql, params, many, context)
 
         start = time.perf_counter()
@@ -114,8 +121,19 @@ class QueryWatcher(BaseWatcher):
         """Normalize SQL for pattern matching (replace literals with ?)."""
         import re
 
-        sql = re.sub(r"'[^']*'", "?", sql)
+        # Escaped single-quoted strings: 'it''s a test' -> ?
+        sql = re.sub(r"'(?:[^']|'')*'", "?", sql)
+        # Hex literals: 0xFF -> ?
+        sql = re.sub(r"\b0[xX][0-9a-fA-F]+\b", "?", sql)
+        # Float/decimal literals: 3.14 -> ?
+        sql = re.sub(r"\b\d+\.\d+\b", "?", sql)
+        # Negative numbers: -42 -> ?
+        sql = re.sub(r"(?<=\W)-\d+\b", "?", sql)
+        # Integer literals: 42 -> ?
         sql = re.sub(r"\b\d+\b", "?", sql)
+        # Normalize variable-length IN clauses: IN (?, ?, ?) -> IN (?)
+        sql = re.sub(r"IN\s*\(\?(?:\s*,\s*\?)*\)", "IN (?)", sql, flags=re.IGNORECASE)
+        # Collapse whitespace
         sql = re.sub(r"\s+", " ", sql).strip()
         return sql
 

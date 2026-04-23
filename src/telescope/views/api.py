@@ -194,3 +194,143 @@ class MonitoringView(TelescopeApiMixin, View):
         if tag:
             TelescopeMonitoring.objects.filter(tag=tag).delete()
         return JsonResponse({"message": "Removed"})
+
+
+class StatsView(TelescopeApiMixin, View):
+    """Analytics dashboard: percentiles, Apdex, error rates, throughput, slow queries, cache stats."""
+
+    def get(self, request):
+        from datetime import timedelta
+
+        from django.db.models import Avg, Count, Q
+        from django.utils import timezone
+
+        # Parse time range
+        range_param = request.GET.get("range", "24h")
+        hours = {"1h": 1, "6h": 6, "24h": 24, "7d": 168}.get(range_param, 24)
+        cutoff = timezone.now() - timedelta(hours=hours)
+
+        base_qs = TelescopeEntry.objects.filter(created_at__gte=cutoff)
+
+        # --- Request stats ---
+        request_qs = base_qs.filter(type=EntryType.REQUEST.value)
+        request_count = request_qs.count()
+
+        durations = list(
+            request_qs.values_list("content__duration", flat=True)
+            .exclude(content__duration__isnull=True)
+            .order_by("content__duration")
+        )
+        # Filter to valid numeric durations
+        durations = sorted(d for d in durations if isinstance(d, (int, float)))
+
+        percentiles = self._calc_percentiles(durations)
+
+        # Apdex: satisfied < T, tolerating < 4T, frustrated >= 4T
+        apdex_threshold = get_config("APDEX_THRESHOLD")
+        apdex = self._calc_apdex(durations, apdex_threshold)
+
+        # Error rate
+        error_count = request_qs.filter(content__status_code__gte=500).count()
+        error_rate = round(error_count / request_count * 100, 2) if request_count else 0
+
+        # Throughput (requests per minute)
+        minutes = hours * 60
+        throughput = round(request_count / minutes, 2) if minutes else 0
+
+        # --- Slow query top-10 ---
+        query_qs = base_qs.filter(type=EntryType.QUERY.value).exclude(family_hash__isnull=True)
+        slow_queries = (
+            query_qs.values("family_hash")
+            .annotate(count=Count("id"), avg_duration=Avg("content__duration"))
+            .order_by("-count")[:10]
+        )
+        slow_query_list = []
+        for sq in slow_queries:
+            # Get a sample SQL for this hash
+            sample = query_qs.filter(family_hash=sq["family_hash"]).values_list("content__sql", flat=True).first()
+            slow_query_list.append({
+                "family_hash": sq["family_hash"],
+                "count": sq["count"],
+                "avg_duration": round(sq["avg_duration"] or 0, 2),
+                "sample_sql": str(sample)[:200] if sample else None,
+            })
+
+        # --- Cache stats ---
+        cache_qs = base_qs.filter(type=EntryType.CACHE.value)
+        cache_total = cache_qs.count()
+        cache_hits = cache_qs.filter(content__hit=True).count()
+        cache_hit_rate = round(cache_hits / cache_total * 100, 2) if cache_total else 0
+
+        # --- N+1 patterns ---
+        n1_count = base_qs.filter(
+            type=EntryType.QUERY.value,
+            tags__tag="n+1",
+        ).values("family_hash").distinct().count()
+
+        return JsonResponse({
+            "range": range_param,
+            "requests": {
+                "total": request_count,
+                "percentiles": percentiles,
+                "apdex": apdex,
+                "apdex_threshold": apdex_threshold,
+                "error_count": error_count,
+                "error_rate": error_rate,
+                "throughput_per_minute": throughput,
+            },
+            "queries": {
+                "total": query_qs.count(),
+                "slow_patterns": slow_query_list,
+                "n_plus_one_patterns": n1_count,
+            },
+            "cache": {
+                "total": cache_total,
+                "hits": cache_hits,
+                "hit_rate": cache_hit_rate,
+            },
+        })
+
+    @staticmethod
+    def _calc_percentiles(sorted_durations):
+        if not sorted_durations:
+            return {"p50": 0, "p75": 0, "p95": 0, "p99": 0}
+        n = len(sorted_durations)
+        return {
+            "p50": round(sorted_durations[int(n * 0.50)], 2),
+            "p75": round(sorted_durations[int(n * 0.75)], 2),
+            "p95": round(sorted_durations[int(n * 0.95)], 2),
+            "p99": round(sorted_durations[min(int(n * 0.99), n - 1)], 2),
+        }
+
+    @staticmethod
+    def _calc_apdex(durations, threshold):
+        if not durations:
+            return 0
+        satisfied = sum(1 for d in durations if d < threshold)
+        tolerating = sum(1 for d in durations if threshold <= d < threshold * 4)
+        total = len(durations)
+        return round((satisfied + tolerating / 2) / total, 3)
+
+
+class HealthView(TelescopeApiMixin, View):
+    """Watcher health status."""
+
+    def get(self, request):
+        from ..watchers import WatcherRegistry
+
+        health = WatcherRegistry.health()
+
+        healthy = sum(1 for v in health.values() if v.get("status") == "healthy")
+        failed = sum(1 for v in health.values() if v.get("status") == "failed")
+        disabled = sum(1 for v in health.values() if v.get("status") == "disabled")
+
+        return JsonResponse({
+            "summary": {
+                "healthy": healthy,
+                "failed": failed,
+                "disabled": disabled,
+                "total": len(health),
+            },
+            "watchers": health,
+        })

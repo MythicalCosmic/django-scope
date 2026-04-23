@@ -1,10 +1,12 @@
 import logging
 import threading
 import uuid
+from collections import defaultdict
 from contextvars import ContextVar
 
 from .context import get_batch_id, get_buffer, is_recording
 from .entry_type import EntryType
+from .redaction import redact_sensitive
 from .truncation import truncate_content
 
 logger = logging.getLogger("telescope.recorder")
@@ -29,6 +31,7 @@ class Recorder:
             return
 
         content = truncate_content(content)
+        content = redact_sensitive(content)
 
         entry_data = {
             "uuid": str(uuid.uuid4()),
@@ -36,6 +39,7 @@ class Recorder:
             "type": entry_type.value,
             "content": content,
             "tags": tags or [],
+            "family_hash": content.get("family_hash"),
         }
 
         buf = get_buffer()
@@ -54,7 +58,39 @@ class Recorder:
 
         entries = list(buf)
         buf.clear()
+        # Retroactively tag all queries in N+1 patterns before persisting
+        cls._tag_n_plus_one(entries)
         cls._persist(entries)
+
+    @classmethod
+    def _tag_n_plus_one(cls, entries):
+        """Tag ALL queries in patterns that exceed the N+1 threshold."""
+        from .settings import get_config
+
+        threshold = get_config("N_PLUS_ONE_THRESHOLD")
+        query_type = EntryType.QUERY.value
+
+        # Count family_hash occurrences among query entries
+        hash_counts: dict[str, int] = defaultdict(int)
+        for entry in entries:
+            if entry["type"] == query_type:
+                fh = entry.get("family_hash")
+                if fh:
+                    hash_counts[fh] += 1
+
+        # Find patterns that crossed the threshold
+        bad_hashes = {h for h, c in hash_counts.items() if c >= threshold}
+        if not bad_hashes:
+            return
+
+        # Tag ALL entries (including the first ones) for those patterns
+        for entry in entries:
+            if entry["type"] == query_type:
+                fh = entry.get("family_hash")
+                if fh in bad_hashes:
+                    if "n+1" not in entry["tags"]:
+                        entry["tags"].append("n+1")
+                    entry["content"]["n_plus_one"] = True
 
     @classmethod
     def _persist(cls, entries):
@@ -70,6 +106,7 @@ class Recorder:
             entry = TelescopeEntry(
                 uuid=entry_data["uuid"],
                 batch_id=entry_data.get("batch_id"),
+                family_hash=entry_data.get("family_hash"),
                 type=entry_data["type"],
                 content=entry_data["content"],
             )

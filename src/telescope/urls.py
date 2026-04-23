@@ -6,7 +6,9 @@ from .views.api import (
     EntryDeleteView,
     EntryDetailView,
     EntryListView,
+    HealthView,
     MonitoringView,
+    StatsView,
     StatusView,
     ToggleRecordingView,
     TypedEntryListView,
@@ -24,6 +26,8 @@ urlpatterns = [
     path("api/batch/<uuid:batch_id>", BatchDetailView.as_view(), name="batch-detail"),
     path("api/clear", ClearEntriesView.as_view(), name="clear"),
     path("api/status", StatusView.as_view(), name="status"),
+    path("api/stats", StatsView.as_view(), name="stats"),
+    path("api/health", HealthView.as_view(), name="health"),
     path("api/toggle-recording", ToggleRecordingView.as_view(), name="toggle-recording"),
     path("api/monitoring", MonitoringView.as_view(), name="monitoring"),
 
